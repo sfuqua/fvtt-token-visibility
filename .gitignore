@@ -1,0 +1,8 @@
+node_modules/
+
+# Build artifacts
+module/**
+
+# Test artifacts
+coverage/
+junit.xml
