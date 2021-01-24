@@ -32,9 +32,6 @@ const REVEALED_TOKEN_LAYER_KEY = "revealedTokens";
  */
 const CANVAS_LAYERS_KEY = "layers";
 
-// XXX: REMOVE
-CONFIG.debug.hooks = true;
-
 Hooks.on("init", () => {
     // TODO: Register settings
 
@@ -45,11 +42,4 @@ Hooks.on("init", () => {
     const currentLayers = Canvas[CANVAS_LAYERS_KEY];
     const newLayers = { ...currentLayers, [REVEALED_TOKEN_LAYER_KEY]: RevealedTokenLayer };
     Object.defineProperty(Canvas, CANVAS_LAYERS_KEY, { get: () => newLayers });
-});
-
-Hooks.on("sightRefresh", (_sightLayer: SightLayer) => {
-    for (const _token of canvas.tokens.placeables) {
-        // HACK for testing - make all tokens visible all the time
-        // token.visible = token.visible || !token.data.hidden;
-    }
 });
