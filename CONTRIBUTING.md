@@ -25,4 +25,4 @@ Then either copy the folder into your Foundry VTT "modules/" data folder (rename
 
 ## Merging your code
 
-Pull requests into master are welcome and I will review them if they show up.
+Pull requests into main are welcome and I will review them if they show up.
