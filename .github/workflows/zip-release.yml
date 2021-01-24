@@ -28,12 +28,10 @@ jobs:
               run: npm run lint && npm run build && npm test
 
               # Use jq to read the "version" attribute of module.json and store it
-              # in an env variable NEW_VERSION for later steps, as well as a step
-              # output called new_version.
+              # in an output called new_version for later steps.
             - name: Get latest manifest version
               id: get_version
               run: |
-                  echo "::set-env name=NEW_VERSION::$(jq -r '.version' module.json)"
                   echo "::set-output name=new_version::$(jq -r '.version' module.json)"
 
             - name: Delete download URL from manifest and copy to output directory
