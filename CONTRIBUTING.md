@@ -21,7 +21,7 @@ This package uses a combination of [foundry-pc-types](https://gitlab.com/Eranzie
 
 First, build your changes (`npm run build`); this will generate an installable module in the "module" directory.
 
-Then either copy the folder into your Foundry VTT "modules/" data folder (renamed "hidden-intiative/"), or create a symlink called "hidden-initiative/" from the modules directory to your local module directory.
+Then either copy the folder into your Foundry VTT "modules/" data folder (renamed "shared-token-visibility/"), or create a symlink called "shared-token-visibility/" from the modules directory to your local module directory.
 
 ## Merging your code
 

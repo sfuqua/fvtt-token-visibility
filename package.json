@@ -10,7 +10,7 @@
         "format": "prettier --write \"./**/*.{js,json,md,ts}\"",
         "lint": "eslint . --ext .ts,.tsx",
         "lint:fix": "npm run lint -- --fix",
-        "test": "jest --colors"
+        "test": "jest --colors --pass-with-no-tests"
     },
     "repository": {
         "type": "git",
@@ -24,6 +24,7 @@
     "homepage": "https://github.com/sfuqua/fvtt-token-visibility#readme",
     "devDependencies": {
         "@types/jest": "^26.0.20",
+        "@types/pixi.js": "^5.0.0",
         "@typescript-eslint/eslint-plugin": "^4.14.0",
         "@typescript-eslint/parser": "^4.14.0",
         "eslint": "^7.18.0",
