@@ -64,7 +64,7 @@ jobs:
                   asset_name: fvtt-token-visibility-module.zip
                   asset_content_type: application/zip
 
-            - name: Update download URL in master
+            - name: Update download URL in main
               run: |
                   jq '.download="${{ steps.upload_release.outputs.browser_download_url }}"' module.json > updated.json
                   mv updated.json module.json
@@ -73,4 +73,4 @@ jobs:
                   git config --global user.email "${{ github.actor }}@users.noreply.github.com"
                   git add module.json
                   git commit -m "Updating manifest with latest release"
-                  git push origin master
+                  git push origin main
