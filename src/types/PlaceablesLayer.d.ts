@@ -12,4 +12,9 @@ declare class PlaceablesLayer extends CanvasLayer {
      * Draw a single placeable object
      */
     createObject(data: unknown): PlaceableObject;
+
+    /**
+     * Tries to find an object on this layer.
+     */
+    get(id: string): PlaceableObject | undefined;
 }
