@@ -3,22 +3,11 @@
  * 1. They have a token on the scene themselves, so they can see *smomething*
  * 2. One of their allies in the party has visibility of the token
  *
- * OPTION A: leverage `restrictVisibility` and the "sightRefresh" hook
- * The SightLayer is a CanvasLayer that calls `restrictVisibility` to hide tokens (and door controls) from players.
- * At the end of this function the "sightRefresh" hook is dispatched.
- * We could leverage this hook and re-enable invisible tokens as long as at least one player can see the token.
- * Hooks.on("sightRefresh", layer => {
- *   // Enumerate canvas.tokens.placeables
- *   // canvas seems to be a global; canvas.tokens is the TokenLayer; placeables is a Token[]
- *   // if !token.visible, token.visible = isTokenVisibleToAnyPlayer(v)? This function does not exist yet
- * });
- *
- * This approach involves multiple passes over the token collection and can be inefficient for token-heavy scenes.
- *
- * OPTION B: leverage token.isVisible
- * If we get this to true for a player, then restrictVisibility will ignore the token.
- * This relies on the "get isVisible" property on the Token class in foundry.js, which calls:
- * canvas.sight.testVisibility(this.center, {tolerance, object: this});
+ * To accomplish this, we do the following:
+ * 1. Establish a new CanvasLayer ("RevealedTokenLayer") that renders above the SightLayer, so that
+ *      revealed tokens draw above the fog of war
+ * 2. Leverage the "sightRefresh" hook to keep token visibility state in sync between clients, using the socket.
+ * 3. As tokens are updated or we get notified about visibility changes from other clients, update our new layer.
  */
 
 import { RevealedTokenLayer } from "./RevealedTokenLayer.js";
@@ -33,14 +22,17 @@ const REVEALED_TOKEN_LAYER_KEY = "revealedTokens";
  */
 const CANVAS_LAYERS_KEY = "layers";
 
+/**
+ * Helper to fish our layer out of the canvas.
+ * @returns The RevealedTokenLayer if it exists, else undefined
+ */
 function getRevealedTokenLayer(): RevealedTokenLayer | undefined {
     return ((canvas as unknown) as { [key: string]: RevealedTokenLayer })?.[REVEALED_TOKEN_LAYER_KEY];
 }
 
-CONFIG.debug.hooks = true;
-
 Hooks.on("init", () => {
     // TODO: Register settings
+    // It'd be nice to have a setting for "all tokens" vs "just players"
 
     // Add our custom layer to the list of Canvas layers.
     // We want to ensure this happens before the Canvas is constructed.
@@ -52,6 +44,8 @@ Hooks.on("init", () => {
 });
 
 Hooks.on("setup", () => {
+    // This module uses the game websocket to notify other clients of token visibility updates
+    // This hook handles responding to that event
     const socket = getSocket();
 
     // When we get a visibility update event from another client, find our layer instance
@@ -68,6 +62,16 @@ Hooks.on("setup", () => {
     });
 });
 
+// The sightRefresh hook is invoked by the SightLayer once
+// it has finished updating token visibility based on fog.
+// We'll want to rebuild our reveal layer and then push updates to
+// other clients.
+Hooks.on("sightRefresh", (sight: SightLayer) => {
+    const ourLayer = getRevealedTokenLayer();
+    ourLayer?.rebuildLayer(sight);
+});
+
+// Whenever we get notified about a token update, evaluate whether our layer is dirty
 Hooks.on(
     "updateToken",
     (_scene: Scene, token: { _id: string }, _update: unknown, _options: unknown, userId: string) => {
@@ -76,6 +80,7 @@ Hooks.on(
     }
 );
 
+// Whenever we notified about a token being deleted, evaluate whether our layer is dirty
 Hooks.on("deleteToken", (_scene: Scene, token: { _id: string }, _options: unknown, userId: string) => {
     const ourLayer = getRevealedTokenLayer();
     ourLayer?.deleteTokens([token._id]);

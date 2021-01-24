@@ -18,12 +18,6 @@ export class RevealedTokenLayer extends CanvasLayer {
         this.revealedTokens = new Map();
         this.myVisibleTokens = new Set();
         this.myHiddenTokens = new Set();
-
-        // The sightRefresh hook is invoked by the SightLayer once
-        // it has finished updating token visibility based on fog.
-        Hooks.on("sightRefresh", (sight: SightLayer) => {
-            this.rebuildLayer(sight);
-        });
     }
 
     static get layerOptions(): CanvasLayerOptions {
@@ -32,6 +26,10 @@ export class RevealedTokenLayer extends CanvasLayer {
         } as CanvasLayerOptions);
     }
 
+    /**
+     * Handles repopulating our layer with token icons and pushing visibility
+     * changes to other clients.
+     */
     rebuildLayer(sight: SightLayer): void {
         if (!sight.tokenVision || !sight.sources.size) {
             // This module is a no-op without token vision.
@@ -43,11 +41,17 @@ export class RevealedTokenLayer extends CanvasLayer {
         }
 
         // Sets for tracking changes from the previous update.
+        // If any token changes, we'll need to notify other clients
+        // so that they can repaint.
         const newlyVisible = new Set<string>();
         const newlyHidden = new Set<string>();
 
+        // We'll iterate all tokens on the canvas and determine if we should
+        // see them.
         this.removeChildren();
         for (const token of canvas.tokens.placeables as Token[]) {
+            // First - evaluate whether this token is newly visible or hidden from *this* client's
+            // perspective. This is used to synchronize state between clients.
             if (token.id) {
                 if (token.visible && !this.myVisibleTokens.has(token.id)) {
                     this.myHiddenTokens.delete(token.id);
@@ -60,6 +64,8 @@ export class RevealedTokenLayer extends CanvasLayer {
                 }
             }
 
+            // Next we'll figure out if this token is currently invisible on our TokenLayer,
+            // and should be revealed on this layer.
             if (!token.visible && !token.data.hidden) {
                 // If this token has been hidden by a visibility restriction,
                 // evaluate whether draw it on this layer.
@@ -176,6 +182,10 @@ export class RevealedTokenLayer extends CanvasLayer {
         }
     }
 
+    /**
+     * Notifies the layer that one or more tokens have been deleted,
+     * so that they can be removed from this layer if needed.
+     */
     deleteTokens(ids: string[]): void {
         let dirty = false;
         for (const id of ids) {
@@ -192,6 +202,11 @@ export class RevealedTokenLayer extends CanvasLayer {
         }
     }
 
+    /**
+     * Notifies the layer that one or more tokens have been updated,
+     * so that this layer can refresh itself if needed. This helps keep
+     * us in sync as tokens move around.
+     */
     updateTokens(_userId: string, updates: Array<{ _id: string }>): void {
         let dirty = false;
         for (const { _id: tokenId } of updates) {

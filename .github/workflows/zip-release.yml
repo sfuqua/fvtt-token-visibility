@@ -1,77 +1,77 @@
 name: Publish
 
 on:
-  push:
-    branches:
-      - master
-    paths:
-      - module.json
+    push:
+        branches:
+            - main
+        paths:
+            - module.json
 
 jobs:
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    build:
+        # The type of runner that the job will run on
+        runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v2
+        steps:
+            - uses: actions/checkout@v2
 
-    - name: Setup Node.js environment
-      uses: actions/setup-node@v2.1.0
-      with:
-        node-version: 12.x
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v2.1.0
+              with:
+                  node-version: 12.x
 
-    - name: npm ci
-      run: npm ci
-      
-    - name: Lint, build, test
-      run: npm run lint && npm run build && npm test
-      
-      # Use jq to read the "version" attribute of module.json and store it
-      # in an env variable NEW_VERSION for later steps, as well as a step
-      # output called new_version.
-    - name: Get latest manifest version
-      id: get_version
-      run: |
-        echo "::set-env name=NEW_VERSION::$(jq -r '.version' module.json)"
-        echo "::set-output name=new_version::$(jq -r '.version' module.json)"
+            - name: npm ci
+              run: npm ci
 
-    - name: Delete download URL from manifest and copy to output directory
-      run: |
-        jq 'del(.download)' module.json > stripped.json
-        mv stripped.json ./module/module.json
+            - name: Lint, build, test
+              run: npm run lint && npm run build && npm test
 
-    - name: Zip the module
-      run: zip -r ./module.zip ./module
-      
-    - name: Create release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.get_version.outputs.new_version }}
-        release_name: Release v${{ steps.get_version.outputs.new_version }}
-        draft: false
-        prerelease: true
-    
-    - name: Upload module zip
-      id: upload_release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: ./module.zip
-        asset_name: fvtt-hidden-initiative-module.zip
-        asset_content_type: application/zip
+              # Use jq to read the "version" attribute of module.json and store it
+              # in an env variable NEW_VERSION for later steps, as well as a step
+              # output called new_version.
+            - name: Get latest manifest version
+              id: get_version
+              run: |
+                  echo "::set-env name=NEW_VERSION::$(jq -r '.version' module.json)"
+                  echo "::set-output name=new_version::$(jq -r '.version' module.json)"
 
-    - name: Update download URL in master
-      run: |
-        jq '.download="${{ steps.upload_release.outputs.browser_download_url }}"' module.json > updated.json
-        mv updated.json module.json
-        npx prettier --write "module.json"
-        git config --global user.name "${{ github.actor }}"
-        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-        git add module.json
-        git commit -m "Updating manifest with latest release"
-        git push origin master
+            - name: Delete download URL from manifest and copy to output directory
+              run: |
+                  jq 'del(.download)' module.json > stripped.json
+                  mv stripped.json ./module/module.json
+
+            - name: Zip the module
+              run: zip -r ./module.zip ./module
+
+            - name: Create release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ steps.get_version.outputs.new_version }}
+                  release_name: Release v${{ steps.get_version.outputs.new_version }}
+                  draft: false
+                  prerelease: true
+
+            - name: Upload module zip
+              id: upload_release
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./module.zip
+                  asset_name: fvtt-token-visibility-module.zip
+                  asset_content_type: application/zip
+
+            - name: Update download URL in master
+              run: |
+                  jq '.download="${{ steps.upload_release.outputs.browser_download_url }}"' module.json > updated.json
+                  mv updated.json module.json
+                  npx prettier --write "module.json"
+                  git config --global user.name "${{ github.actor }}"
+                  git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+                  git add module.json
+                  git commit -m "Updating manifest with latest release"
+                  git push origin master
