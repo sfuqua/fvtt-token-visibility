@@ -152,7 +152,7 @@ export class RevealedTokenLayer extends CanvasLayer {
     }
 
     /**
-     * Handles visibility updates from other clients
+     * Handles visibility updates from other clients.
      */
     handleTokenUpdate({ userId, visibleIds, hiddenIds }: TokenVisibilityUpdate): void {
         let dirty = false;
