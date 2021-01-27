@@ -30,7 +30,7 @@ export class RevealedTokenLayer extends CanvasLayer {
      * Handles repopulating our layer with token icons and pushing visibility
      * changes to other clients.
      */
-    rebuildLayer(sight: SightLayer): void {
+    async rebuildLayer(sight: SightLayer): Promise<void> {
         if (!sight.tokenVision || !sight.sources.size) {
             // This module is a no-op without token vision.
             this.visible = false;
@@ -48,7 +48,7 @@ export class RevealedTokenLayer extends CanvasLayer {
 
         // We'll iterate all tokens on the canvas and determine if we should
         // see them.
-        this.removeChildren();
+        const newChildren: PIXI.Container[] = [];
         for (const token of canvas.tokens.placeables as Token[]) {
             // First - evaluate whether this token is newly visible or hidden from *this* client's
             // perspective. This is used to synchronize state between clients.
@@ -80,8 +80,13 @@ export class RevealedTokenLayer extends CanvasLayer {
                 }
 
                 // Reveal the token
-                this.addChild(this.buildTokenContainer(token as Token));
+                newChildren.push(await this.buildTokenContainer(token as Token));
             }
+        }
+
+        this.removeChildren();
+        for (const newChild of newChildren) {
+            this.addChild(newChild);
         }
 
         // If anything changed since the last update, notify other clients.
@@ -116,38 +121,17 @@ export class RevealedTokenLayer extends CanvasLayer {
 
     /**
      * Given a Token, clones it as a new PIXI Container for rendering into this layer.
-     * This is almost entirely based on Token.refresh().
      */
-    buildTokenContainer(token: Token): PIXI.Container {
-        const tokenClone = new PIXI.Container();
-        const { sprite, texture } = this.buildTokenIcon(token);
-        tokenClone.addChild(sprite);
-        tokenClone.position.set(token.data.x, token.data.y);
-        if (texture) {
-            const aspect = texture.width / texture.height;
-            if (aspect >= 1) {
-                sprite.width = token.w * token.data.scale;
-                sprite.scale.y = sprite.scale.x;
-            } else {
-                sprite.height = token.h * token.data.scale;
-                sprite.scale.x = sprite.scale.y;
-            }
-        }
+    async buildTokenContainer(token: Token): Promise<PIXI.Container> {
+        const tokenClone = token.clone();
+        await tokenClone.draw();
 
-        // Mirror horizontally or vertically
-        sprite.scale.x = Math.abs(sprite.scale.x) * (token.data.mirrorX ? -1 : 1);
-        sprite.scale.y = Math.abs(sprite.scale.y) * (token.data.mirrorY ? -1 : 1);
-
-        // Set rotation, position, and opacity
-        // TODO: Decide whether we want to track rotation in the fog or not
-        // sprite.rotation = toRadians(token.data.lockRotation ? 0 : token.data.rotation);
-        sprite.position.set(token.w / 2, token.h / 2);
+        // Tokens hide themselves in the draw() method by default
+        tokenClone.visible = true;
 
         // Revealed tokens will be at 50% opacity
-        sprite.alpha = 0.5;
+        tokenClone.alpha = 0.5;
 
-        sprite.visible = true;
-        tokenClone.visible = true;
         return tokenClone;
     }
 
