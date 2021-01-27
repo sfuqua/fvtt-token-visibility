@@ -5,6 +5,22 @@
  */
 export const SOCKET_EVENT_NAME = "module.shared-token-visibility";
 
+/**
+ * Asks other clients for their visibility info.
+ * Used to sync during initial load.
+ */
+export type VisibilityRequest = {
+    type: "visibilityRequest";
+
+    /**
+     * The sending user.
+     */
+    userId: string;
+};
+
+/**
+ * Provides the current visibility to other users.
+ */
 export type TokenVisibilityUpdate = {
     type: "visibilityUpdate";
 
@@ -23,6 +39,8 @@ export type TokenVisibilityUpdate = {
      */
     hiddenIds: string[];
 };
+
+export type SocketEvent = VisibilityRequest | TokenVisibilityUpdate;
 
 export type EmbeddedEntityUpdateCommon = {
     /**

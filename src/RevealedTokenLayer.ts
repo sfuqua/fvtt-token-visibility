@@ -91,14 +91,7 @@ export class RevealedTokenLayer extends CanvasLayer {
 
         // If anything changed since the last update, notify other clients.
         if (newlyVisible.size > 0 || newlyHidden.size > 0) {
-            const update: TokenVisibilityUpdate = {
-                type: "visibilityUpdate",
-                userId: game.userId,
-                visibleIds: [...this.myVisibleTokens],
-                hiddenIds: [...this.myHiddenTokens],
-            };
-
-            getSocket().emit(SOCKET_EVENT_NAME, update);
+            this.emitVisibilityUpdate();
         }
 
         this.visible = true;
@@ -203,5 +196,19 @@ export class RevealedTokenLayer extends CanvasLayer {
         if (dirty) {
             this.rebuildLayer(canvas.sight);
         }
+    }
+
+    /**
+     * Fires off the current visibility status to other clients.
+     */
+    emitVisibilityUpdate(): void {
+        const update: TokenVisibilityUpdate = {
+            type: "visibilityUpdate",
+            userId: game.userId,
+            visibleIds: [...this.myVisibleTokens],
+            hiddenIds: [...this.myHiddenTokens],
+        };
+
+        getSocket().emit(SOCKET_EVENT_NAME, update);
     }
 }

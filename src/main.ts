@@ -11,7 +11,7 @@
  */
 
 import { RevealedTokenLayer } from "./RevealedTokenLayer.js";
-import { getSocket, SOCKET_EVENT_NAME, TokenVisibilityUpdate } from "./sockets.js";
+import { getSocket, SocketEvent, SOCKET_EVENT_NAME, VisibilityRequest } from "./sockets.js";
 
 // Ideally this would be a Symbol to avoid conflicts, but Foundry
 // relies on Object.keys to walk the named layers, which is strings only.
@@ -29,6 +29,8 @@ const CANVAS_LAYERS_KEY = "layers";
 function getRevealedTokenLayer(): RevealedTokenLayer | undefined {
     return ((canvas as unknown) as { [key: string]: RevealedTokenLayer })?.[REVEALED_TOKEN_LAYER_KEY];
 }
+
+CONFIG.debug.hooks = true;
 
 Hooks.on("init", () => {
     // TODO: Register settings
@@ -50,16 +52,39 @@ Hooks.on("setup", () => {
 
     // When we get a visibility update event from another client, find our layer instance
     // on the current canvas and try to notify it of the change.
-    socket.on(SOCKET_EVENT_NAME, (event: TokenVisibilityUpdate) => {
+    socket.on(SOCKET_EVENT_NAME, (event: SocketEvent) => {
+        // Ignore socket updates from ourselves
         if (event.userId === game.userId) {
             return;
         }
 
         const ourLayer = getRevealedTokenLayer();
-        if (event.type === "visibilityUpdate") {
-            ourLayer?.handleTokenUpdate(event);
+
+        switch (event.type) {
+            case "visibilityRequest": {
+                ourLayer?.emitVisibilityUpdate();
+                break;
+            }
+            case "visibilityUpdate": {
+                ourLayer?.handleTokenUpdate(event);
+                break;
+            }
+            default: {
+                const unexpectedEvent: never = event;
+                console.warn(`shared-token-vision | Unexpected websocket event: ${JSON.stringify(unexpectedEvent)}`);
+            }
         }
     });
+});
+
+Hooks.on("ready", () => {
+    // Once we're done loading, ask other clients to sync their
+    // visibility to us.
+    const visibilityRequest: VisibilityRequest = {
+        type: "visibilityRequest",
+        userId: game.userId,
+    };
+    getSocket().emit(SOCKET_EVENT_NAME, visibilityRequest);
 });
 
 // The sightRefresh hook is invoked by the SightLayer once
