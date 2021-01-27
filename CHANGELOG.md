@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-Token bars and effects are now rendered in addition to the icon.
+-   Token bars and effects are now rendered in addition to the icon.
+-   The module now has settings. First new setting: You can now opt out of sharing NPC token visibility (making this module only share player tokens).
 
 ### Fixed
 

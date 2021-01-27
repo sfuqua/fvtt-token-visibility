@@ -1,1 +1,4 @@
-{}
+{
+    "Setting.RevealNpc.Title": "Reveal visible NPC tokens",
+    "Setting.RevealNpc.Hint": "If one player can see an NPC, reveal that token to all other players?"
+}

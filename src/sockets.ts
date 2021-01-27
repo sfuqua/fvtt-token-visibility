@@ -1,9 +1,11 @@
+import { MODULE_NAME } from "./settings.js";
+
 /**
  * The Foundry server will only broadcast events if:
  * 1. We opt into sockets via the module manifest
  * 2. Our event name is `module.${module_name}`
  */
-export const SOCKET_EVENT_NAME = "module.shared-token-visibility";
+export const SOCKET_EVENT_NAME = `module.${MODULE_NAME}`;
 
 /**
  * Asks other clients for their visibility info.

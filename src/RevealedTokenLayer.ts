@@ -1,3 +1,4 @@
+import { MODULE_NAME, SettingName } from "./settings.js";
 import { getSocket, SOCKET_EVENT_NAME, TokenVisibilityUpdate } from "./sockets.js";
 
 /**
@@ -46,6 +47,9 @@ export class RevealedTokenLayer extends CanvasLayer {
         const newlyVisible = new Set<string>();
         const newlyHidden = new Set<string>();
 
+        // Whether NPCs (versus just players) are eligible to have revealed tokens
+        const canRevealNpcs = !!game.settings.get(MODULE_NAME, SettingName.RevealNpc);
+
         // We'll iterate all tokens on the canvas and determine if we should
         // see them.
         const newChildren: PIXI.Container[] = [];
@@ -73,7 +77,7 @@ export class RevealedTokenLayer extends CanvasLayer {
                 // We always flag other players as visible
                 const isAnotherPlayer = !!token.actor?.hasPlayerOwner;
                 const isRevealed = (this.revealedTokens.get(token.id)?.size ?? 0) > 0;
-                if (!isAnotherPlayer && !isRevealed) {
+                if (!isAnotherPlayer && (!isRevealed || !canRevealNpcs)) {
                     // If it's not a player, we require at least one player to have revealed
                     // this token to us.
                     continue;

@@ -11,6 +11,8 @@
  */
 
 import { RevealedTokenLayer } from "./RevealedTokenLayer.js";
+import { loc } from "./loc.js";
+import { MODULE_NAME, SettingName } from "./settings.js";
 import { getSocket, SocketEvent, SOCKET_EVENT_NAME, VisibilityRequest } from "./sockets.js";
 
 // Ideally this would be a Symbol to avoid conflicts, but Foundry
@@ -33,8 +35,19 @@ function getRevealedTokenLayer(): RevealedTokenLayer | undefined {
 CONFIG.debug.hooks = true;
 
 Hooks.on("init", () => {
-    // TODO: Register settings
-    // It'd be nice to have a setting for "all tokens" vs "just players"
+    game.settings.register(MODULE_NAME, SettingName.RevealNpc, {
+        name: loc("Setting.RevealNpc.Title"),
+        hint: loc("Setting.RevealNpc.Hint"),
+        type: Boolean,
+        config: true,
+        default: true,
+        scope: "world",
+        onChange: (newValue: boolean) => {
+            console.log(`[${MODULE_NAME}]: NPC reveal setting changed to ${newValue}, reevaluating visibility`);
+            const ourLayer = getRevealedTokenLayer();
+            ourLayer?.rebuildLayer(canvas.sight);
+        },
+    });
 
     // Add our custom layer to the list of Canvas layers.
     // We want to ensure this happens before the Canvas is constructed.
@@ -71,7 +84,7 @@ Hooks.on("setup", () => {
             }
             default: {
                 const unexpectedEvent: never = event;
-                console.warn(`shared-token-vision | Unexpected websocket event: ${JSON.stringify(unexpectedEvent)}`);
+                console.warn(`[${MODULE_NAME}]: Unexpected websocket event: ${JSON.stringify(unexpectedEvent)}`);
             }
         }
     });
