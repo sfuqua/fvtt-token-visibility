@@ -1,4 +1,6 @@
 {
     "Setting.RevealNpc.Title": "Reveal visible NPC tokens",
-    "Setting.RevealNpc.Hint": "If one player can see an NPC, reveal that token to all other players?"
+    "Setting.RevealNpc.Hint": "If one player can see an NPC, reveal that token to all other players?",
+    "Setting.PlayerVision.Title": "Share player vision",
+    "Setting.PlayerVision.Hint": "Share vision between all players; similar to giving Observer permission to all player tokens"
 }

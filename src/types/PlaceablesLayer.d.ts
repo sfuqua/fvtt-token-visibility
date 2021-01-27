@@ -2,6 +2,8 @@ declare class PlaceablesLayer extends CanvasLayer {
     readonly placeables: PlaceableObject[];
     objects: PIXI.Container | null;
 
+    get controlled(): PlaceableObject[];
+
     /**
      * Draw the PlaceablesLayer.
      * Draw each Sound within the scene as a child of the sounds container.

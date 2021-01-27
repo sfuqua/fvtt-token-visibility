@@ -22,4 +22,6 @@ declare class Canvas {
     };
 
     get layers(): CanvasLayer[];
+
+    initializeSources(): void;
 }

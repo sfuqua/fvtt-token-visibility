@@ -49,6 +49,19 @@ Hooks.on("init", () => {
         },
     });
 
+    game.settings.register(MODULE_NAME, SettingName.PlayerVision, {
+        name: loc("Setting.PlayerVision.Title"),
+        hint: loc("Setting.PlayerVision.Hint"),
+        type: Boolean,
+        config: true,
+        default: false,
+        scope: "world",
+        onChange: (newValue: boolean) => {
+            console.log(`[${MODULE_NAME}]: Player vision setting changed to ${newValue}, reevaluating canvas sources`);
+            canvas.initializeSources();
+        },
+    });
+
     // Add our custom layer to the list of Canvas layers.
     // We want to ensure this happens before the Canvas is constructed.
     // The init hook should happen first, giving us a chance to tamper with layers
@@ -56,6 +69,27 @@ Hooks.on("init", () => {
     const currentLayers = Canvas[CANVAS_LAYERS_KEY];
     const newLayers = { ...currentLayers, [REVEALED_TOKEN_LAYER_KEY]: RevealedTokenLayer };
     Object.defineProperty(Canvas, CANVAS_LAYERS_KEY, { get: () => newLayers });
+
+    // Monkeypatch Token._isVisionSource() to allow our custom token vision behavior, if
+    // the user has opted into sharing player vision.
+    const originalIsVisionSource = Token.prototype._isVisionSource;
+    Token.prototype._isVisionSource = function (this: Token) {
+        const sharePlayerVision = !!game.settings.get(MODULE_NAME, SettingName.PlayerVision);
+
+        const controlledTokens = (this.layer.controlled as Token[]).filter((t) => !t.data.hidden && t.hasSight);
+
+        // We add this token as a vision source if:
+        // 1. The setting is enabled
+        // 2. All controlled tokens are owned by a player
+        // 3. This token is owned by a player
+        return (
+            originalIsVisionSource.call(this) ||
+            (sharePlayerVision &&
+                controlledTokens.length > 0 &&
+                controlledTokens.reduce((acc, tok) => acc && !!tok.actor?.hasPlayerOwner, true) &&
+                !!this.actor?.hasPlayerOwner)
+        );
+    };
 });
 
 Hooks.on("setup", () => {
