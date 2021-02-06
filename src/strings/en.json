@@ -1,4 +1,6 @@
 {
+    "Setting.RevealControlled.Title": "Reveal controlled tokens",
+    "Setting.RevealControlled.Hint": "Fully reveal tokens the player controls? This can be useful when playing with vision cones",
     "Setting.RevealNpc.Title": "Reveal visible NPC tokens",
     "Setting.RevealNpc.Hint": "If one player can see an NPC, reveal that token to all other players?",
     "Setting.PlayerVision.Title": "Share player vision",

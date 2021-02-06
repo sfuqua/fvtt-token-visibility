@@ -35,6 +35,22 @@ function getRevealedTokenLayer(): RevealedTokenLayer | undefined {
 CONFIG.debug.hooks = true;
 
 Hooks.on("init", () => {
+    game.settings.register(MODULE_NAME, SettingName.RevealControlled, {
+        name: loc("Setting.RevealControlled.Title"),
+        hint: loc("Setting.RevealControlled.Hint"),
+        type: Boolean,
+        config: true,
+        default: false,
+        scope: "world",
+        onChange: (newValue: boolean) => {
+            console.log(
+                `[${MODULE_NAME}]: Controlled token reveal setting changed to ${newValue}, reevaluating visibility`
+            );
+            const ourLayer = getRevealedTokenLayer();
+            ourLayer?.rebuildLayer(canvas.sight);
+        },
+    });
+
     game.settings.register(MODULE_NAME, SettingName.RevealNpc, {
         name: loc("Setting.RevealNpc.Title"),
         hint: loc("Setting.RevealNpc.Hint"),
@@ -156,4 +172,21 @@ Hooks.on(
 Hooks.on("deleteToken", (_scene: Scene, token: { _id: string }, _options: unknown, userId: string) => {
     const ourLayer = getRevealedTokenLayer();
     ourLayer?.deleteTokens([token._id]);
+});
+
+// Called when a character sheet is updated, which could update token data.
+Hooks.on("updateActor", (_actor: unknown) => {
+    // This might have updated one or more tokens. Best to just rebuild.
+    // TODO: Optimize based on actor's token IDs.
+    const ourLayer = getRevealedTokenLayer();
+    ourLayer?.rebuildLayer(canvas.sight);
+});
+
+// Called when an effect is added - note that updateToken is *not* called in this case.
+// updateToken *is* called when an effect is removed.
+Hooks.on("createActiveEffect", (_actor: unknown, _effect: unknown) => {
+    // This might have updated one or more tokens. Best to just rebuild.
+    // TODO: Optimize based on actor's token IDs.
+    // const ourLayer = getRevealedTokenLayer();
+    // ourLayer?.rebuildLayer(canvas.sight);
 });
