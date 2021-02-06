@@ -32,8 +32,6 @@ function getRevealedTokenLayer(): RevealedTokenLayer | undefined {
     return ((canvas as unknown) as { [key: string]: RevealedTokenLayer })?.[REVEALED_TOKEN_LAYER_KEY];
 }
 
-CONFIG.debug.hooks = true;
-
 Hooks.on("init", () => {
     game.settings.register(MODULE_NAME, SettingName.RevealControlled, {
         name: loc("Setting.RevealControlled.Title"),

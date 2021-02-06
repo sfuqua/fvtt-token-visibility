@@ -1,6 +1,6 @@
 {
     "name": "shared-token-visibility",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "title": "Shared Token Visibility",
     "description": "Shares visibility of individual tokens between all players, regardless of dynamic lightning",
     "author": "Steven Fuqua",
@@ -9,7 +9,7 @@
     "compatibleCoreVersion": "0.7.9",
     "url": "https://github.com/sfuqua/fvtt-token-visibility",
     "manifest": "https://raw.githubusercontent.com/sfuqua/fvtt-token-visibility/master/module.json",
-    "download": "https://github.com/sfuqua/fvtt-token-visibility/releases/download/0.2.0/fvtt-token-visibility-module.zip",
+    "download": "https://github.com/sfuqua/fvtt-token-visibility/releases/download/0.2.1/fvtt-token-visibility-module.zip",
     "languages": [
         {
             "lang": "en",
