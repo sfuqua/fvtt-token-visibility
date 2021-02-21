@@ -1,3 +1,3 @@
-declare class TokenLayer extends PlaceablesLayer {
+declare class TokenLayer extends PlaceablesLayer<Token> {
     static get layerOptions(): PlaceableLayerOptions;
 }

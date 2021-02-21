@@ -1,8 +1,8 @@
-declare class PlaceablesLayer extends CanvasLayer {
-    readonly placeables: PlaceableObject[];
+declare class PlaceablesLayer<T extends PlaceableObject> extends CanvasLayer {
+    readonly placeables: T[];
     objects: PIXI.Container | null;
 
-    get controlled(): PlaceableObject[];
+    get controlled(): T[];
 
     /**
      * Draw the PlaceablesLayer.
@@ -13,10 +13,10 @@ declare class PlaceablesLayer extends CanvasLayer {
     /**
      * Draw a single placeable object
      */
-    createObject(data: unknown): PlaceableObject;
+    createObject(data: unknown): T;
 
     /**
      * Tries to find an object on this layer.
      */
-    get(id: string): PlaceableObject | undefined;
+    get(id: string): T | undefined;
 }
