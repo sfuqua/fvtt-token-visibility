@@ -191,7 +191,21 @@ export class RevealedTokenLayer extends CanvasLayer {
     updateTokens(_userId: string, updates: Array<{ _id: string }>): void {
         let dirty = false;
         for (const { _id: tokenId } of updates) {
+            // This means we have shared vision of this token and aren't drawing it ourselves,
+            // so the token needs to move
             if (this.revealedTokens.has(tokenId) && !this.myVisibleTokens.has(tokenId)) {
+                dirty = true;
+                break;
+            }
+
+            // Whether this token is currently being drawn on this client
+            const tokenVisible = canvas.tokens.get(tokenId)?.visible;
+
+            // This means something's out of sync and we need to rebuild our status
+            if (
+                !!tokenVisible !== this.myVisibleTokens.has(tokenId) ||
+                !tokenVisible !== this.myHiddenTokens.has(tokenId)
+            ) {
                 dirty = true;
                 break;
             }
@@ -206,6 +220,11 @@ export class RevealedTokenLayer extends CanvasLayer {
      * Fires off the current visibility status to other clients.
      */
     emitVisibilityUpdate(): void {
+        // If we're a GM, we want to avoid leaking tokens to the players
+        if (game.user.isGM) {
+            return;
+        }
+
         const update: TokenVisibilityUpdate = {
             type: "visibilityUpdate",
             userId: game.userId,

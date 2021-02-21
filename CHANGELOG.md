@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.2 - 2020/02/20
+
+### Fixed
+
+-   Addressed an issue where NPC tokens could be leaked to players when the GM clicks on an NPC.
+-   Addressed an issue where the GM moving NPC tokens did not update shared vision of those tokens.
+
 ## 0.2.1 - 2020/02/01
 
 ### Fixed

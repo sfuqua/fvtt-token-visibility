@@ -1,6 +1,6 @@
 {
     "name": "shared-token-visibility",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "title": "Shared Token Visibility",
     "description": "Shares visibility of individual tokens between all players, regardless of dynamic lightning",
     "author": "Steven Fuqua",
